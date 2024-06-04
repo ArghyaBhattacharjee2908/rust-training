@@ -28,7 +28,6 @@ pub fn farenheit2celsius(farenheit: i32) -> i32 {
 /// ```
 
 pub fn fibonacci_loop(n: u32) -> u32 {
-    let mut count: u32 = 1;
     let mut a: u32 = 0;
     let mut b: u32 = 1;
     let mut c: u32 = 0;
@@ -37,16 +36,10 @@ pub fn fibonacci_loop(n: u32) -> u32 {
     } else if n == 1 {
         c = b;
     } else {
-        loop {
-            count += 1;
-            if count <= n {
-                c = a + b;
-                a = b;
-                b = c;
-                continue;
-            } else {
-                break;
-            }
+        for _i in 2..(n + 1) {
+            c = a + b;
+            a = b;
+            b = c;
         }
     }
     c
@@ -70,28 +63,22 @@ pub fn fibonacci_rec(n: u32) -> u32 {
 #[cfg(test)]
 
 mod tests {
-    use super::celsius2farenheit;
+    use super::*;
 
     #[test]
     fn test_celcius2farenheit() {
         assert_eq!(celsius2farenheit(0), 32);
     }
 
-    use super::farenheit2celsius;
-
     #[test]
     fn test_farenheit2celcius() {
         assert_eq!(farenheit2celsius(-40), -40);
     }
 
-    use super::fibonacci_loop;
-
     #[test]
     fn test_fibonacci_loop() {
         assert_eq!(fibonacci_loop(5), 5);
     }
-
-    use super::fibonacci_rec;
 
     #[test]
     fn test_fibonacci_rec() {
