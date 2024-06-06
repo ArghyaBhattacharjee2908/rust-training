@@ -1,6 +1,7 @@
 pub enum Error {
-    Err1,
-    Err2,
+    SenderNotFound,
+    ReceiverNotFound,
+    CreditLimitOverflow,
 }
 pub struct User {
     name: String,
@@ -27,6 +28,7 @@ impl Bank {
         }
         (liab, ass)
     }
+
     pub fn transfer_funds(
         &mut self,
         user1: String,
@@ -35,6 +37,7 @@ impl Bank {
     ) -> Result<bool, Error> {
         let mut user1_index = usize::MAX;
         let mut user2_index = self.user.len();
+        let amount_i64 = i64::try_from(amount).unwrap();
 
         for (i, user) in self.user.iter().enumerate() {
             if user.name == user1 {
@@ -51,19 +54,20 @@ impl Bank {
             }
         }
         if user1_index == usize::MAX {
-            return Err(Error::Err1);
+            return Err(Error::SenderNotFound);
         }
         if user2_index == self.user.len() {
-            return Err(Error::Err1);
+            return Err(Error::ReceiverNotFound);
         }
-        if (self.user[user1_index].balance - i64::try_from(amount).unwrap()).unsigned_abs()
-            > self.user[user1_index].credit_line
+        if self.user[user1_index].balance - amount_i64 < 0
+            && (self.user[user1_index].balance - amount_i64).unsigned_abs()
+                > self.user[user1_index].credit_line
         {
-            return Err(Error::Err2);
+            return Err(Error::CreditLimitOverflow);
         }
 
-        self.user[user1_index].balance -= i64::try_from(amount).unwrap();
-        self.user[user2_index].balance += i64::try_from(amount).unwrap();
+        self.user[user1_index].balance -= amount_i64;
+        self.user[user2_index].balance += amount_i64;
         Ok(true)
     }
 
