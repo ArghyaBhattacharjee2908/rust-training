@@ -36,11 +36,10 @@ impl Bank {
         user1: String,
         user2: String,
         amount: u64,
-    ) -> Result<bool, Error> {
+    ) -> Result<(), Error> {
         let mut user1_index = usize::MAX;
         let mut user2_index = self.users.len();
         let amount_i64 = i64::try_from(amount).map_err(|_| Error::AmountTooLarge)?;
-
         for (i, user) in self.users.iter().enumerate() {
             if user.name == user1 {
                 user1_index = i;
@@ -67,10 +66,9 @@ impl Bank {
         if user1_balance - amount_i64 < -user1_credit_i64 {
             return Err(Error::CreditLimitOverflow);
         }
-
         self.users[user1_index].balance -= amount_i64;
         self.users[user2_index].balance += amount_i64;
-        Ok(true)
+        Ok(())
     }
 
     pub fn accrue_interest(&mut self) {
