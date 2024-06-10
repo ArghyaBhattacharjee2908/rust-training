@@ -48,9 +48,6 @@ impl Bank {
     }
 
     pub fn merge_bank(&mut self, new: Bank) {
-        if self.name == new.name {
-            return;
-        }
         for (key_i, value_i) in new.users {
             match self.users.get_mut(&key_i) {
                 Some(v) => {
@@ -65,11 +62,11 @@ impl Bank {
 
     pub fn transfer_funds(
         &mut self,
-        user_send: String,
-        user_rec: String,
+        user_send: &str,
+        user_rec: &str,
         amount: u64,
     ) -> Result<(), Error> {
-        let sender = self.users.get(&user_send).ok_or(Error::SenderNotFound)?;
+        let sender = self.users.get(user_send).ok_or(Error::SenderNotFound)?;
 
         let sender_credit_line_i64 =
             i64::try_from(sender.credit_line).map_err(|_| Error::SenderCreditLimitTooLarge)?;
@@ -87,7 +84,7 @@ impl Bank {
 
         let receiver = self
             .users
-            .get_mut(&user_rec)
+            .get_mut(user_rec)
             .ok_or(Error::ReceiverNotFound)?;
 
         let receiver_final_balance = receiver
@@ -95,8 +92,8 @@ impl Bank {
             .checked_add(amount_i64)
             .ok_or(Error::ReceiverOverflow)?;
 
-        self.users.get_mut(&user_send).unwrap().balance = sender_final_balance;
-        self.users.get_mut(&user_rec).unwrap().balance = receiver_final_balance;
+        receiver.balance = receiver_final_balance;
+        self.users.get_mut(user_send).unwrap().balance = sender_final_balance;
 
         Ok(())
     }
