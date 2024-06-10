@@ -71,31 +71,28 @@ impl Bank {
     ) -> Result<(), Error> {
         let mut temp: &mut User;
         let amount_i64 = i64::try_from(amount).map_err(|_| Error::AttemptedAmountTooLarge)?;
+
         match self.users.get(&user_send) {
             Some(u) => {
+                let x = u
+                    .balance
+                    .checked_sub(amount_i64)
+                    .ok_or(Error::SenderOverflow)?;
                 let send_credit_i64 =
                     i64::try_from(u.credit_line).map_err(|_| Error::SenderCreditLimitTooLarge)?;
-                match u.balance.checked_sub(amount_i64) {
-                    Some(_v) => {}
-                    None => {
-                        return Err(Error::SenderOverflow);
-                    }
-                };
-                if u.balance - amount_i64 < -send_credit_i64 {
+                if x < -send_credit_i64 {
                     return Err(Error::SenderCreditLimitOverflow);
                 }
                 match self.users.get(&user_rec) {
-                    Some(_w) => {
+                    Some(_v) => {
                         temp = self.users.get_mut(&user_rec).unwrap();
-                        match temp.balance.checked_add(amount_i64) {
-                            Some(_v) => {}
-                            None => {
-                                return Err(Error::ReceiverOverflow);
-                            }
-                        };
-                        temp.balance += amount_i64;
+                        let y = temp
+                            .balance
+                            .checked_add(amount_i64)
+                            .ok_or(Error::ReceiverOverflow)?;
+                        temp.balance = y;
                         temp = self.users.get_mut(&user_send).unwrap();
-                        temp.balance -= amount_i64;
+                        temp.balance = x;
                     }
                     None => {
                         return Err(Error::ReceiverNotFound);
@@ -106,6 +103,7 @@ impl Bank {
                 return Err(Error::SenderNotFound);
             }
         }
+
         Ok(())
     }
 }
