@@ -5,7 +5,7 @@ pub enum Error {
     AttemptedAmountTooLarge,
     SenderOverflow,
     ReceiverOverflow,
-    SenderCreditLimitOverflow,
+    SenderCreditLimitCrossed,
     SenderCreditLimitTooLarge,
 }
 pub struct User {
@@ -69,40 +69,34 @@ impl Bank {
         user_rec: String,
         amount: u64,
     ) -> Result<(), Error> {
-        let mut temp: &mut User;
+        let sender = self.users.get(&user_send).ok_or(Error::SenderNotFound)?;
+
+        let sender_credit_line_i64 =
+            i64::try_from(sender.credit_line).map_err(|_| Error::SenderCreditLimitTooLarge)?;
+
         let amount_i64 = i64::try_from(amount).map_err(|_| Error::AttemptedAmountTooLarge)?;
 
-        match self.users.get(&user_send) {
-            Some(u) => {
-                let x = u
-                    .balance
-                    .checked_sub(amount_i64)
-                    .ok_or(Error::SenderOverflow)?;
-                let send_credit_i64 =
-                    i64::try_from(u.credit_line).map_err(|_| Error::SenderCreditLimitTooLarge)?;
-                if x < -send_credit_i64 {
-                    return Err(Error::SenderCreditLimitOverflow);
-                }
-                match self.users.get(&user_rec) {
-                    Some(_v) => {
-                        temp = self.users.get_mut(&user_rec).unwrap();
-                        let y = temp
-                            .balance
-                            .checked_add(amount_i64)
-                            .ok_or(Error::ReceiverOverflow)?;
-                        temp.balance = y;
-                        temp = self.users.get_mut(&user_send).unwrap();
-                        temp.balance = x;
-                    }
-                    None => {
-                        return Err(Error::ReceiverNotFound);
-                    }
-                }
-            }
-            None => {
-                return Err(Error::SenderNotFound);
-            }
+        let sender_final_balance = sender
+            .balance
+            .checked_sub(amount_i64)
+            .ok_or(Error::SenderOverflow)?;
+
+        if sender_final_balance < -sender_credit_line_i64 {
+            return Err(Error::SenderCreditLimitCrossed);
         }
+
+        let receiver = self
+            .users
+            .get_mut(&user_rec)
+            .ok_or(Error::ReceiverNotFound)?;
+
+        let receiver_final_balance = receiver
+            .balance
+            .checked_add(amount_i64)
+            .ok_or(Error::ReceiverOverflow)?;
+
+        self.users.get_mut(&user_send).unwrap().balance = sender_final_balance;
+        self.users.get_mut(&user_rec).unwrap().balance = receiver_final_balance;
 
         Ok(())
     }
