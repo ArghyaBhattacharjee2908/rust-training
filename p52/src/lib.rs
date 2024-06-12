@@ -9,7 +9,7 @@ pub fn map_sum1(vec: Vec<u32>, func: fn(u32) -> u64) -> u64 {
     for i in 0..(N - 1) {
         vec_new = vec_old.split_off((i + 1) * chunk_size);
 
-        let handle = std::thread::spawn(move || vec_old.iter().map(move |&y| func(y)).sum());
+        let handle = std::thread::spawn(move || vec_old.iter().copied().map(func).sum());
         handles.push(handle);
 
         vec_old = vec_new;
