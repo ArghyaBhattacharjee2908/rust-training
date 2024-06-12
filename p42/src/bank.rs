@@ -14,6 +14,7 @@ pub struct User {
 }
 pub struct Bank {
     users: HashMap<String, User>,
+    name: String,
     credit_interest: u64,
     debit_interest: u64,
 }
