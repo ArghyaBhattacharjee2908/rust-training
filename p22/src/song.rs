@@ -27,16 +27,16 @@ pub fn twelvedaysofchristmas() {
     let mut x: String;
     let mut y = String::new();
 
-    for i in 0..12 {
+    for (i, p_val) in p1.iter().enumerate() {
         if i == 0 {
-            x = line11.to_owned() + p1[i] + line12 + "\n" + line2 + "\n" + "A " + line_last;
+            x = line11.to_owned() + p_val + line12 + "\n" + line2 + "\n" + "A " + line_last;
         } else {
             y.clear();
-            for j in 0..i {
-                y = p2[j].to_owned() + " " + p3[j] + ",\n" + &y;
+            for (j, &p2_val) in p2.iter().take(i).enumerate() {
+                y = p2_val.to_owned() + " " + p3[j] + ",\n" + &y;
             }
             x = line11.to_owned()
-                + p1[i]
+                + p_val
                 + line12
                 + "\n"
                 + line2
