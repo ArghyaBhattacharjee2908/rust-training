@@ -14,11 +14,16 @@ pub struct User {
 }
 pub struct Bank {
     users: HashMap<String, User>,
+    name: String,
     credit_interest: u64,
     debit_interest: u64,
 }
 
 impl Bank {
+    pub fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
     pub fn calc_balance(&self) -> (u64, u64) {
         let mut liab: u64 = 0;
         let mut ass: u64 = 0;
