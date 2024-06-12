@@ -1,6 +1,4 @@
-const N: usize = 2;
-
-pub fn map_sum1(vec: Vec<u32>, func: fn(u32) -> u64) -> u64 {
+pub fn map_sum1<const N: usize>(vec: Vec<u32>, func: fn(u32) -> u64) -> u64 {
     let vec_len = vec.len();
     let chunk_size = vec_len / N;
     let mut vec_old = vec;
